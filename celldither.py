@@ -76,6 +76,15 @@ def image_to_Lab(image):
     srgb = srgb.reshape(-1, 3)*(1/256)
     return sRGB_to_Lab(srgb)
 
+def dithers(palettes, cell):
+    for i, palette in enumerate(palettes):
+        dith = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(
+            cell, palette, order=8)
+        dith_lab = image_to_Lab(dith.convert('RGB'))
+        delta_E = colour.delta_E(cell_lab, dith_lab)
+        scalar_diff = (delta_E ** 2).sum(0)
+        yield scalar_diff, dith
+
 img = Image.open('kodim23.png')
 
 # img_dithered = hitherdither.ordered.bayer.bayer_dithering(
@@ -83,20 +92,13 @@ img = Image.open('kodim23.png')
 cell = img.crop((0,0,8,8))
 
 cell_lab = image_to_Lab(cell)
-print('cell Lab:', cell_lab)
+#print('cell Lab:', cell_lab)
 
 palettes = tuple(cell_palettes(CGA_PALETTE))
-for i, palette in enumerate(palettes):
-    dith = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(
-        cell, palette, order=8)
-    #print('======')
-    #print('palette:', list(palette))
-    dith_lab = image_to_Lab(dith.convert('RGB'))
-    #print('dith_lab:', dith_lab)
-    #print('------')
-    #print('delta_E:', colour.delta_E(cell_lab, dith_lab))
-    delta_E = colour.delta_E(cell_lab, dith_lab)
-    print('ss delta_E:', (delta_E**2).sum(0))
 
-    # TODO: pick best dither by sum of squares of delta_E
+_, best_cell = (min(dithers(palettes, cell), key=lambda x: x[0]))
+print(best_cell)
+print(best_cell.width)
+best_cell.save('/tmp/bc.png')
+
     # TODO: assemble each best dither into output image
