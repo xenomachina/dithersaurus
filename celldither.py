@@ -80,25 +80,30 @@ def dithers(palettes, cell):
     for i, palette in enumerate(palettes):
         dith = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(
             cell, palette, order=8)
-        dith_lab = image_to_Lab(dith.convert('RGB'))
-        delta_E = colour.delta_E(cell_lab, dith_lab)
-        scalar_diff = (delta_E ** 2).sum(0)
-        yield scalar_diff, dith
+        yield dith
 
-img = Image.open('kodim23.png')
+def image_diff(orig_lab, new):
+    new_lab = image_to_Lab(new.convert('RGB'))
+    delta_E = colour.delta_E(cell_lab, new_lab)
+    scalar_diff = (delta_E ** 2).sum(0)
+    return scalar_diff
 
-# img_dithered = hitherdither.ordered.bayer.bayer_dithering(
-#     img, palette, 0, order=8)
-cell = img.crop((0,0,8,8))
-
-cell_lab = image_to_Lab(cell)
-#print('cell Lab:', cell_lab)
+CELL_W = 8
+CELL_H = 8
 
 palettes = tuple(cell_palettes(CGA_PALETTE))
 
-_, best_cell = (min(dithers(palettes, cell), key=lambda x: x[0]))
-print(best_cell)
-print(best_cell.width)
-best_cell.save('/tmp/bc.png')
+img = Image.open('kodim23.png')
+out = img.copy()
 
-    # TODO: assemble each best dither into output image
+for y in range(0, img.height, CELL_H):
+    for x in range(0, img.width, CELL_W):
+        cell = img.crop((x, y, x + CELL_W, y + CELL_H))
+        cell_lab = image_to_Lab(cell)
+        best_dith = min(dithers(palettes, cell),
+                key=lambda dith: image_diff(cell_lab, dith))
+        out.paste(best_dith, (x, y))
+        print(x, y)
+    out.show()
+
+out.save('/tmp/out.png')
