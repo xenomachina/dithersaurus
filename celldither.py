@@ -3,6 +3,7 @@
 from PIL import Image
 import hitherdither
 import numpy
+import colour
 
 VDC_EMUATOR_PALETTE = [
     0x000000, # Dark Black
@@ -67,14 +68,21 @@ def cell_palettes(palette):
         for j in range(i+1, n):
             yield hitherdither.palette.Palette([palette[i], palette[j]])
 
+def sRGB_to_Lab(srgb):
+    return colour.XYZ_to_Lab(colour.sRGB_to_XYZ(srgb))
+
+def image_to_Lab(image):
+    srgb = numpy.array(cell).reshape(-1, 3)*(1/256)
+    return sRGB_to_Lab(srgb)
+
 img = Image.open('kodim23.png')
 
 # img_dithered = hitherdither.ordered.bayer.bayer_dithering(
 #     img, palette, 0, order=8)
 cell = img.crop((0,0,8,8))
-cell_srgb = numpy.array(cell).reshape(-1, 3)
-print(cell_srgb)
-# TODO: convert to lab
+
+cell_lab = image_to_Lab(cell)
+print(cell_lab)
 
 palettes = tuple(cell_palettes(CGA_PALETTE))
 for i, palette in enumerate(palettes):
@@ -86,7 +94,3 @@ for i, palette in enumerate(palettes):
     # TODO: compute sum of squares
     # TODO: pick best dither by sum of squares of delta_E
     # TODO: assemble each best dither into output image
-
-
-
-
