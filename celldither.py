@@ -2,7 +2,7 @@
 
 from PIL import Image
 import hitherdither
-
+import numpy
 
 VDC_EMUATOR_PALETTE = [
     0x000000, # Dark Black
@@ -72,8 +72,21 @@ img = Image.open('kodim23.png')
 # img_dithered = hitherdither.ordered.bayer.bayer_dithering(
 #     img, palette, 0, order=8)
 cell = img.crop((0,0,8,8))
+cell_srgb = numpy.array(cell).reshape(-1, 3)
+print(cell_srgb)
+# TODO: convert to lab
+
 palettes = tuple(cell_palettes(CGA_PALETTE))
 for i, palette in enumerate(palettes):
     img_dithered = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(
         cell, palette, order=8)
-    img_dithered.save('/tmp/_%d.png' % i)
+    # TODO: convert to array
+    # TODO: convert to lab
+    # TODO: get delta_E with cell_lab
+    # TODO: compute sum of squares
+    # TODO: pick best dither by sum of squares of delta_E
+    # TODO: assemble each best dither into output image
+
+
+
+
