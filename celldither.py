@@ -72,11 +72,8 @@ def sRGB_to_Lab(srgb):
     return colour.XYZ_to_Lab(colour.sRGB_to_XYZ(srgb))
 
 def image_to_Lab(image):
-    print('>0>', image)
     srgb = numpy.array(image)
-    print('>1>', srgb)
     srgb = srgb.reshape(-1, 3)*(1/256)
-    print('>2>', srgb)
     return sRGB_to_Lab(srgb)
 
 img = Image.open('kodim23.png')
@@ -92,14 +89,14 @@ palettes = tuple(cell_palettes(CGA_PALETTE))
 for i, palette in enumerate(palettes):
     dith = hitherdither.ordered.yliluoma.yliluomas_1_ordered_dithering(
         cell, palette, order=8)
-    print('======')
-    print('palette:', list(palette))
+    #print('======')
+    #print('palette:', list(palette))
     dith_lab = image_to_Lab(dith.convert('RGB'))
-    print('dith_lab:', dith_lab)
-    print('------')
-    print('delta_E:', colour.delta_E(cell_lab, dith_lab))
+    #print('dith_lab:', dith_lab)
+    #print('------')
+    #print('delta_E:', colour.delta_E(cell_lab, dith_lab))
+    delta_E = colour.delta_E(cell_lab, dith_lab)
+    print('ss delta_E:', (delta_E**2).sum(0))
 
-    # TODO: get delta_E with cell_lab
-    # TODO: compute sum of squares
     # TODO: pick best dither by sum of squares of delta_E
     # TODO: assemble each best dither into output image
