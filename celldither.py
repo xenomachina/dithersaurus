@@ -1,6 +1,11 @@
 #!/usr/local/bin/python3
 
-from PIL import Image
+# pip3 install -U --user numpy pillow
+# pip3 install --user git+https://www.github.com/hbldh/hitherdither
+# pip3 install colour-science
+
+from PIL import Image, ImageFilter  
+  
 import hitherdither
 import numpy
 import colour
@@ -82,8 +87,10 @@ def dithers(palettes, cell):
             cell, palette, order=8)
         yield dith
 
+blur_filter = ImageFilter.BoxBlur(radius = 1)
+
 def image_diff(orig_lab, new):
-    new_lab = image_to_Lab(new.convert('RGB'))
+    new_lab = image_to_Lab(new.convert('RGB').filter(blur_filter))
     delta_E = colour.delta_E(cell_lab, new_lab)
     scalar_diff = (delta_E ** 2).sum(0)
     return scalar_diff
@@ -93,7 +100,7 @@ CELL_H = 8
 
 palettes = tuple(cell_palettes(CGA_PALETTE))
 
-img = Image.open('kodim23.png')
+img = Image.open('k23.png')
 out = img.copy()
 
 for y in range(0, img.height, CELL_H):
@@ -106,4 +113,4 @@ for y in range(0, img.height, CELL_H):
         print(x, y)
     out.show()
 
-out.save('/tmp/out.png')
+out.save('/tmp/out_box1.png')
