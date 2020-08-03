@@ -4,11 +4,13 @@
 # pip3 install --user git+https://www.github.com/hbldh/hitherdither
 # pip3 install colour-science
 
-from PIL import Image, ImageFilter  
-  
+import colour
 import hitherdither
 import numpy
-import colour
+import sys
+
+from PIL import Image, ImageFilter
+
 
 VDC_EMUATOR_PALETTE = [
     0x000000, # Dark Black
@@ -100,7 +102,9 @@ CELL_H = 8
 
 palettes = tuple(cell_palettes(CGA_PALETTE))
 
-img = Image.open('k23.png')
+in_fnam, out_fnam = sys.argv[1:]
+
+img = Image.open(in_fnam)
 out = img.copy()
 
 for y in range(0, img.height, CELL_H):
@@ -113,4 +117,4 @@ for y in range(0, img.height, CELL_H):
         print(x, y)
     out.show()
 
-out.save('/tmp/out_box1.png')
+out.save(out_fnam)
